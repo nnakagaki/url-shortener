@@ -1,0 +1,36 @@
+puts "Input your email:"
+print "> "
+email = gets.chomp
+
+if User.exists?(email: email)
+  current_user = User.select { |user| user.email == email }.first
+else
+  current_user = User.create!(email: email)
+end
+
+puts "\nWhat would you like to do?"
+puts "0. Create shortened URL"
+puts "1. Visit shortened URL"
+print "> "
+option = gets.chomp
+
+if option == '0'
+  puts "Type in your long url"
+  long_url = gets.chomp
+  su_instance = ShortenedUrl.create_for_user_and_long_url!(
+    current_user, long_url)
+  puts "Short url is: #{su_instance.short_url}"
+else
+  TagTopic.visit_hash.each do |topic, visits|
+    visits = 0 if visits.nil?
+    puts "#{topic}: #{visits} views"
+  end
+
+  puts "Type in the shortened URL"
+  short_url = gets.chomp
+  long_url = ShortenedUrl.select do |url|
+    url.short_url == short_url
+  end.first.long_url
+
+  system("launchy #{long_url}")
+end
